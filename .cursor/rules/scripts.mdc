@@ -1,0 +1,51 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+- All scripts should be designed to be run from the project root directory.
+- Prefer using `npm` scripts in `package.json` for consistency.
+
+## package.json scripts
+Your `package.json` should contain scripts for common tasks.
+
+```json
+"scripts": {
+  "vscode:prepublish": "npm run compile",
+  "compile": "tsc -p ./",
+  "watch": "tsc -watch -p ./",
+  "lint": "eslint src --ext ts",
+  "test": "jest"
+},
+```
+
+## Shell Scripts
+Shell scripts can be used for more complex orchestration, like setting up an environment before running tests. They should be placed in a `scripts/` directory.
+
+### Example: Test execution script (`scripts/run-tests.sh`)
+This script might set up environment variables before running `npm test`.
+
+```bash
+#!/bin/bash
+
+# Set any environment variables needed for tests
+# export MY_API_KEY="12345"
+
+# Run tests using the npm script
+npm test
+```
+
+### Example: Node execution script (`scripts/run-node.sh`)
+Since nodes in a VSCode extension are run from within the editor, a direct execution script is less common. However, you might have scripts to build and package the extension.
+
+```bash
+#!/bin/bash
+
+# This script could be used to package your extension into a .vsix file
+
+# Make sure vsce (Visual Studio Code Extensions) is installed
+# npm install -g @vscode/vsce
+
+echo "Packaging extension..."
+vsce package
+```

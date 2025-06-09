@@ -1,0 +1,45 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## Guidelines
+- Standard return format for functions that might fail (e.g. API calls): `{"success": boolean, "message": string, "result": T | null}`. For internal functions, direct returns are often clearer.
+- Please follow the example function below.
+- Unless dealing with external services, functions should assume correct parameters will be passed to it.
+
+## Function Design
+- Use early returns for validation with clear error messages.
+- Use `try...catch` blocks for handling errors from external services (like API calls).
+- Document functions using TSDoc, including parameter and return descriptions.
+- Functions should be stored in `./src/functions`.
+- One function per file. The name of the function should match the file name (e.g., `myFunction.ts` exports `myFunction`).
+
+### Example TypeScript Function
+```typescript
+/**
+ * A brief description of what the function does.
+ * @param param1 Description of the first parameter.
+ * @returns A description of what the function returns.
+ */
+export function exampleFunction(param1: string): { success: boolean; message: string; result: { data: string } | null } {
+  if (!param1) {
+    return { success: false, message: "param1 is required", result: null };
+  }
+
+  try {
+    // Business logic here
+    const processedData = `Processed: ${param1}`;
+    return { success: true, message: "Operation successful", result: { data: processedData } };
+  } catch (error) {
+    // In a real scenario, you would log the error
+    console.error("An error occurred in exampleFunction:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+    return { success: false, message: `An unexpected error occurred: ${errorMessage}`, result: null };
+  }
+}
+```
+
+When creating a function:
+- [ ] `grep_search` for existing functions before a creating new one.
+- [ ] `grep_search` for existing functions that could potentially be leveraged.

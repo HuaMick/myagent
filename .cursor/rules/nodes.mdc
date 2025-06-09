@@ -1,0 +1,66 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## Guidelines
+- A "Node" in a VSCode extension context is an orchestrated workflow, often exposed as a command that a user can trigger.
+- Nodes orchestrate calls to one or more functions to achieve a larger piece of functionality.
+- Focus on clear process flow with status reporting to the user (e.g., via `vscode.window.showInformationMessage`).
+
+## Node Design
+- **Main function structure**: Each node should export a main function (e.g., a function to be registered as a command).
+- **Process tracking**: Use `vscode.window.showInformationMessage` or `showWarningMessage` to show progress. For background tasks, use `vscode.window.withProgress`.
+- **Error handling**: Use `try...catch` to handle errors gracefully and inform the user with `vscode.window.showErrorMessage`.
+- **Function chaining**: Import and call functions from `src/functions/`.
+- **Result handling**: Check function success/failure and handle appropriately.
+- **Final summary**: Provide a clear completion message to the user.
+
+## Best Practices
+- **One node per file**: Node filename should match the main workflow it performs.
+- **Import functions**: Always import from `src/functions/` - never place complex business logic inside a node file.
+- **Status reporting**: Print clear messages for each major step.
+
+### Example Node (VSCode Command)
+```typescript
+// src/nodes/myAgentNode.ts
+import * as vscode from 'vscode';
+import { someFunctionFromFunctions } from '../functions/someFunction';
+
+export function registerMyAgentNode() {
+  // This function would be called in your extension.ts to register the command
+  const disposable = vscode.commands.registerCommand('my-extension.runAgent', async () => {
+    vscode.window.showInformationMessage('Starting my agent...');
+
+    try {
+      // 1. Get input from the user
+      const userInput = await vscode.window.showInputBox({ prompt: 'What should the agent do?' });
+      if (!userInput) {
+        vscode.window.showWarningMessage('Agent run cancelled.');
+        return;
+      }
+
+      // 2. Orchestrate function calls
+      const result = someFunctionFromFunctions(userInput);
+
+      if (result.success) {
+        vscode.window.showInformationMessage(`Agent finished successfully: ${result.message}`);
+      } else {
+        vscode.window.showErrorMessage(`Agent failed: ${result.message}`);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      vscode.window.showErrorMessage(`An unexpected error occurred while running the agent: ${errorMessage}`);
+      console.error(error);
+    }
+  });
+
+  return disposable;
+}
+```
+
+When creating a node:
+- [ ] `grep_search` for existing functions that could potentially be leveraged.
+- [ ] Create an integration test for each node that is created.
+- [ ] Create an integration test shell script for the node's integration test
+- [ ] Create a node execution script
