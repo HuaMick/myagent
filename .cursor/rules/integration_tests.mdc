@@ -9,11 +9,11 @@ Integration tests are crucial for verifying that different parts of the applicat
 
 **Philosophy**: Every major feature or function that interacts with an external API should have an integration test. This validates its interaction with real (or near-real) dependencies and ensures it behaves as expected. Mocks should be used sparingly, primarily for isolating true external services that are out of scope for the current integration test if they are unavailable during testing.
 
-## Rules:
+## Guidelines:
 - Test files should be located in `src/tests` and end with `.test.ts`.
-- Use a testing framework like Jest or Vitest. We'll use Jest for our examples.
-- Have a shell script in `./scripts/run-test.sh` to execute the tests.
-- Do not use mocking for the core logic being tested in integration tests. Test against real services if possible (e.g., a test instance of your Python API).
+- Use Jest as the testing framework.
+- Do not use mocking for internal logic. Mocking should only be used when interacting with an external service.
+- When mocking services or data create a fixture in `src/tests/fixtures`
 - Decouple test implementation from test execution by using shell scripts for environment setup.
 
 ## Always
@@ -47,18 +47,6 @@ describe('Integration Test for exampleFunction', () => {
     expect(result.message).toBe('param1 is required');
   });
 });
-```
-
-## Test Execution Script (`scripts/run-tests.sh`):
-```bash
-#!/bin/bash
-
-# This script assumes you have a package.json with a "test" script.
-# Example "test" script in package.json: "jest"
-
-echo "Running integration tests..."
-npm test
-
 ```
 To setup Jest, you would run `npm install --save-dev jest @types/jest ts-jest` and create a `jest.config.js`.
 

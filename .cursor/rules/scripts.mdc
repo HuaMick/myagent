@@ -14,38 +14,47 @@ Your `package.json` should contain scripts for common tasks.
   "vscode:prepublish": "npm run compile",
   "compile": "tsc -p ./",
   "watch": "tsc -watch -p ./",
-  "lint": "eslint src --ext ts",
-  "test": "jest"
+  "pretest": "npm run compile && npm run lint",
+  "lint": "eslint src",
+  "test": "vscode-test"
 },
 ```
 
 ## Shell Scripts
-Shell scripts can be used for more complex orchestration, like setting up an environment before running tests. They should be placed in a `scripts/` directory.
+Shell scripts can be used for more complex orchestration and should be placed in a `scripts/` directory.
 
-### Example: Test execution script (`scripts/run-tests.sh`)
-This script might set up environment variables before running `npm test`.
+### Example: Specific Test Execution (`scripts/run-integration-test.sh`)
+This script compiles the project and then runs a specific subset of integration tests. This is useful when you are working on a single feature and want to avoid running the entire test suite.
 
 ```bash
 #!/bin/bash
 
-# Set any environment variables needed for tests
-# export MY_API_KEY="12345"
+# Exit immediately if a command exits with a non-zero status.
+set -e
 
-# Run tests using the npm script
-npm test
+# Ensure the project is compiled before running tests.
+echo "Compiling project..."
+npm run compile
+
+# Run tests that match a specific pattern.
+# Usage: ./scripts/run-integration-test.sh "My Test Suite Name"
+echo "Running specific integration tests..."
+npx vscode-test --grep "$1"
 ```
 
-### Example: Node execution script (`scripts/run-node.sh`)
-Since nodes in a VSCode extension are run from within the editor, a direct execution script is less common. However, you might have scripts to build and package the extension.
+To make it executable, run: `chmod +x scripts/run-integration-test.sh`
+
+### Example: Packaging Script (`scripts/package.sh`)
+This script packages your extension into a `.vsix` file for distribution.
 
 ```bash
 #!/bin/bash
 
-# This script could be used to package your extension into a .vsix file
+# This script packages your extension into a .vsix file
 
-# Make sure vsce (Visual Studio Code Extensions) is installed
+# Ensure vsce (Visual Studio Code Extensions command-line tool) is installed
 # npm install -g @vscode/vsce
 
 echo "Packaging extension..."
 vsce package
-```
+``` 
