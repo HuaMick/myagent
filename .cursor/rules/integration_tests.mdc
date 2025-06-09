@@ -3,31 +3,52 @@ description: creating and updating integration test or integration test shell sc
 globs: 
 alwaysApply: false
 ---
-# Integration Tests (TypeScript/Jest)
+# Integration Tests Guide for MyAgent
+
+This document outlines the integration testing approach and conventions used in this project.
+
+## Overview
 
 Integration tests are crucial for verifying that different parts of the application, especially functions and API-calling modules, work together correctly.
 
 **Philosophy**: Every major feature or function that interacts with an external API should have an integration test. This validates its interaction with real (or near-real) dependencies and ensures it behaves as expected. Mocks should be used sparingly, primarily for isolating true external services that are out of scope for the current integration test if they are unavailable during testing.
 
-## Guidelines:
+## Testing Framework
+
+This project uses **Mocha** as the testing framework for integration tests, which is standard for VS Code extension development. The tests are located in the `src/tests` directory.
+
+## Guidelines
+
 - Test files should be located in `src/tests` and end with `.test.ts`.
-- Use Jest as the testing framework.
+- Use Mocha as the testing framework with the assert library for assertions.
 - Do not use mocking for internal logic. Mocking should only be used when interacting with an external service.
 - When mocking services or data create a fixture in `src/tests/fixtures`
 - Decouple test implementation from test execution by using shell scripts for environment setup.
 
+## Test Structure
+
+- **Test Files**: All test files should be in the `src/tests` directory and follow the naming convention of `*.test.ts`.
+- **Fixtures**: Reusable test data and mock services are located in `src/tests/fixtures/`.
+
 ## Always
+
+When creating or updating integration tests, always:
+
 - [ ] `grep_search` for related test files.
 - [ ] Check if an existing test can be updated to meet the testing objective.
 - [ ] Run the integration test after creating it to make sure it works.
 
-## Jest Test Template:
+## Writing Tests
+
+### Mocha Test Template
+
 ```typescript
 // src/tests/example.test.ts
+import * as assert from 'assert';
 import { exampleFunction } from '../functions/exampleFunction';
 
-describe('Integration Test for exampleFunction', () => {
-  it('should return success for valid input', () => {
+describe('Integration Test for exampleFunction', function() {
+  it('should return success for valid input', function() {
     // Execute test operation
     const result = exampleFunction('test input');
 
@@ -36,19 +57,87 @@ describe('Integration Test for exampleFunction', () => {
     console.log(`Results: ${JSON.stringify(result, null, 2)}`);
 
     // Assertions to verify the results
-    expect(result.success).toBe(true);
-    expect(result.result).not.toBeNull();
-    expect(result.result?.data).toContain('Processed');
+    assert.strictEqual(result.success, true);
+    assert.notStrictEqual(result.result, null);
+    assert.ok(result.result?.data.includes('Processed'));
   });
 
-  it('should return failure for invalid input', () => {
+  it('should return failure for invalid input', function() {
     const result = exampleFunction('');
-    expect(result.success).toBe(false);
-    expect(result.message).toBe('param1 is required');
+    assert.strictEqual(result.success, false);
+    assert.strictEqual(result.message, 'param1 is required');
   });
 });
 ```
-To setup Jest, you would run `npm install --save-dev jest @types/jest ts-jest` and create a `jest.config.js`.
 
+### Using Fixtures
 
+We provide fixtures to help with common testing tasks:
 
+```typescript
+import { mockExternalService } from './fixtures/services.fixture';
+
+describe('API Integration', function() {
+  it('should fetch data from external service', async function() {
+    // Setup mock for external service that's out of scope
+    const mockService = mockExternalService({
+      responseData: { status: 'success', data: ['item1', 'item2'] }
+    });
+    
+    // Test against real API with only external dependencies mocked
+    const result = await fetchAndProcessData();
+    
+    // Verify the results
+    assert.strictEqual(result.success, true);
+    assert.strictEqual(result.data.length, 2);
+  });
+});
+```
+
+## Running Tests
+
+### Run All Tests
+
+```bash
+./scripts/run-tests.sh
+```
+
+### Run a Specific Test File
+
+```bash
+./scripts/run-tests.sh src/tests/example.test.ts
+```
+
+### Run Tests Matching a Pattern
+
+```bash
+./scripts/run-tests.sh --pattern "api"
+```
+
+## Best Practices
+
+1. **Test Real Behavior**: Integration tests should test against real implementations when possible.
+2. **Limit Mocking**: Only mock external services that are out of scope for the test.
+3. **Be Specific**: Test names should clearly describe what's being tested.
+4. **Keep Tests Independent**: Each test should run independently of others.
+5. **Print Debug Info**: Include console.log statements that print test results for easier debugging.
+
+## Setup Instructions
+
+To set up Mocha for integration testing, run:
+
+```bash
+npm install --save-dev mocha @types/mocha ts-node
+```
+
+And configure the test script in package.json:
+
+```json
+"scripts": {
+  "test": "mocha -r ts-node/register src/tests/**/*.test.ts"
+}
+```
+
+## Debugging Tests
+
+VS Code provides excellent debugging support for Mocha tests. Use the "JavaScript Debug Terminal" to run the test script with debugging enabled. 
