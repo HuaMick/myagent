@@ -42,6 +42,6 @@ Example of a TBC item.
 
 11. For each node list the functions the node will leverage.
 
-12. For each milestone, design a set of integration tests that will prove the milstone has been reached and all the milstone's components are working.
+12. For each milestone, write integration tests to ensure all components work together correctly. Just test for the main success path, tests for edge cases should be added as they are encountered.
 
 13. Save the `tasks-list.md` to `/project_docs/tasks-list.md`
